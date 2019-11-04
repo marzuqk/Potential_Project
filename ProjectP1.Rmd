@@ -1,0 +1,157 @@
+---
+title: "SBA Diasaster Loans Plot 1"
+author: "Marzuq Khan"
+date: "04 November 2019"
+header-includes:
+    - \usepackage{setspace}\doublespacing
+output: pdf_document
+---
+
+``` {r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+library(tidyverse)
+library(maps)
+library(maptools)
+library(usmap)
+library(GGally)
+
+
+SBA_HL <- read_csv("SBA_HL.csv", skip = 4)
+SBA_HL %>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`)%>%
+  mutate(state = parse_factor(state),
+        type = as.factor("home")) -> SBA_HL
+
+SBA_BL <- read_csv("SBA_BL.csv", skip = 4)
+SBA_BL %>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`) %>%
+  mutate(state = parse_factor(state),
+        type = as.factor("business")) -> SBA_BL
+```
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+SHL <- read_csv("Sandy_HL.csv", skip = 2)
+SBL <- read_csv("Sandy_BL.csv", skip = 2)
+statevec = c("NY", "NJ", "CT", "RI", "VA", "MD", "DE", "NC", "WV","PA")
+
+SBL %>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`)%>%
+  mutate(state = parse_factor(state, levels = statevec),
+        type = as.factor("business")) -> SBL
+
+SHL%>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`)%>%
+  mutate(state = parse_factor(state, levels = statevec),
+         type = as.factor("home")) -> SHL
+
+SL <- full_join(SBL, SHL)
+```
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+##HOME LOANS
+
+#SHL_state
+SHL%>%
+  group_by(state)%>%
+  summarize(home_total_loans = sum(`Total Approved Loan Amount`),
+            home_realestate_loss = sum(`Verified Loss Real Estate`),
+            home_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(home_total_loans)) -> SHL_state
+
+#SHL_county
+SHL%>%
+  mutate(county = tolower(county))%>%
+  group_by(state, county)%>%
+  summarize(home_total_loans = sum(`Total Approved Loan Amount`),
+            home_realestate_loss = sum(`Verified Loss Real Estate`),
+            home_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(home_total_loans)) -> SHL_county
+
+##BUSINESS LOANS
+
+#SBL_state
+SBL%>%
+  group_by(state)%>%
+  summarize(business_total_loans = sum(`Total Approved Loan Amount`),
+            business_realestate_loss = sum(`Verified Loss Real Estate`),
+            business_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(business_total_loans)) -> SBL_state
+
+#SBL_county
+SBL%>%
+  mutate(county = tolower(county))%>%
+  group_by(state, county)%>%
+  summarize(business_total_loans = sum(`Total Approved Loan Amount`),
+            business_realestate_loss = sum(`Verified Loss Real Estate`),
+            business_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(business_total_loans)) -> SBL_county
+
+##TOTAL HOME AND BUSINESS LOANS
+
+#total_SL_state
+full_join(SHL_state, SBL_state)%>%
+  mutate(total_loans = business_total_loans + home_total_loans,
+         total_realeastate_loss = home_realestate_loss + business_realestate_loss,
+         percent_home = home_total_loans/total_loans,
+         percent_business = business_total_loans/total_loans)%>%
+  arrange(desc(total_loans)) -> total_SL_state
+
+#total_SL_county
+full_join(SHL_county, SBL_county, by = c("state", "county"))%>%
+  mutate(total_loans = business_total_loans + home_total_loans,
+         total_realeastate_loss = home_realestate_loss + business_realestate_loss,
+         percent_home = home_total_loans/total_loans,
+         percent_business = business_total_loans/total_loans)%>%
+  arrange(desc(total_loans)) -> total_SL_county
+```
+
+# Initial Hypothesis
+
+##1) Mainly the same states will receive Business and Home Loans related to Hurricane Sandy
+
+Hurricane Sandy struck in 2012, and cost about $65 billion in damages. It affected a total of 24 states, but only 10 benefitted from SBA disaster loans. Something interesting to look at may be how much in cost of loans, number of loans, and percentage of loans were taken by each state.
+
+### Total Dollar Amount of SBA Loans by State
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+plot_usmap(data = total_SL_state,
+           values = "total_loans",
+           include = c("NY", "NJ", "CT", "NC", "RI", "VA", "MD", "DE", "WV", "PA")) +
+  scale_fill_continuous(low = "light yellow", 
+                        high = "dark red", 
+                        name = "Loan Amount", 
+                        label = scales::comma) + 
+  labs(title = "Sandy Disaster Loans", 
+       subtitle = "Total SBA loans in each state") + 
+  theme(legend.position = "right") 
+```
+
+A quick look at the map shows that New york really benefitted off of the loans followed by New Jersey, while Pennsylvania and West Virginia were not really even included.
+
+### Total Number of SBA Loans
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+fct_count(SL$state)%>%
+  ggplot(aes(x = n, y = f)) +
+  geom_point()+
+  xlab("Number of SBA Home and Business Loans") +
+  ylab("State")
+```
+
+Just in terms of numbers of loans, New York and New Jersey seem to have used the about same amount according to the plot, at over 1500, while the amount for every other state is practically negligible in comparison.

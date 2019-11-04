@@ -1,0 +1,166 @@
+---
+title: "SBA Diasaster Loans Plot 1"
+author: "Marzuq Khan"
+date: "04 November 2019"
+header-includes:
+    - \usepackage{setspace}\doublespacing
+output: pdf_document
+---
+
+``` {r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+library(tidyverse)
+library(maps)
+library(maptools)
+library(usmap)
+library(GGally)
+
+
+SBA_HL <- read_csv("SBA_HL.csv", skip = 4)
+SBA_HL %>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`)%>%
+  mutate(state = parse_factor(state),
+        type = as.factor("home")) -> SBA_HL
+
+SBA_BL <- read_csv("SBA_BL.csv", skip = 4)
+SBA_BL %>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`) %>%
+  mutate(state = parse_factor(state),
+        type = as.factor("business")) -> SBA_BL
+```
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+SHL <- read_csv("Sandy_HL.csv", skip = 2)
+SBL <- read_csv("Sandy_BL.csv", skip = 2)
+statevec = c("NY", "NJ", "CT", "RI", "VA", "MD", "DE", "NC", "WV","PA")
+
+SBL %>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`)%>%
+  mutate(state = parse_factor(state, levels = statevec),
+        type = as.factor("business")) -> SBL
+
+SHL%>%
+  rename(state = `Damaged Property State Code`,
+         city = `Damaged Property City Name`,
+         county = `Damaged Property County/Parish Name`,
+         zip = `Damaged Property Zip Code`)%>%
+  mutate(state = parse_factor(state, levels = statevec),
+         type = as.factor("home")) -> SHL
+
+SL <- full_join(SBL, SHL)
+```
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+##HOME LOANS
+
+#SHL_state
+SHL%>%
+  group_by(state)%>%
+  summarize(home_total_loans = sum(`Total Approved Loan Amount`),
+            home_realestate_loss = sum(`Verified Loss Real Estate`),
+            home_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(home_total_loans)) -> SHL_state
+
+#SHL_county
+SHL%>%
+  mutate(county = tolower(county))%>%
+  group_by(state, county)%>%
+  summarize(home_total_loans = sum(`Total Approved Loan Amount`),
+            home_realestate_loss = sum(`Verified Loss Real Estate`),
+            home_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(home_total_loans)) -> SHL_county
+
+##BUSINESS LOANS
+
+#SBL_state
+SBL%>%
+  group_by(state)%>%
+  summarize(business_total_loans = sum(`Total Approved Loan Amount`),
+            business_realestate_loss = sum(`Verified Loss Real Estate`),
+            business_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(business_total_loans)) -> SBL_state
+
+#SBL_county
+SBL%>%
+  mutate(county = tolower(county))%>%
+  group_by(state, county)%>%
+  summarize(business_total_loans = sum(`Total Approved Loan Amount`),
+            business_realestate_loss = sum(`Verified Loss Real Estate`),
+            business_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(business_total_loans)) -> SBL_county
+
+##TOTAL HOME AND BUSINESS LOANS
+
+#total_SL_state
+full_join(SHL_state, SBL_state)%>%
+  mutate(total_loans = business_total_loans + home_total_loans,
+         total_realeastate_loss = home_realestate_loss + business_realestate_loss,
+         percent_home = home_total_loans/total_loans,
+         percent_business = business_total_loans/total_loans)%>%
+  arrange(desc(total_loans)) -> total_SL_state
+
+#total_SL_county
+full_join(SHL_county, SBL_county, by = c("state", "county"))%>%
+  mutate(total_loans = business_total_loans + home_total_loans,
+         total_realeastate_loss = home_realestate_loss + business_realestate_loss,
+         percent_home = home_total_loans/total_loans,
+         percent_business = business_total_loans/total_loans)%>%
+  arrange(desc(total_loans)) -> total_SL_county
+```
+
+
+### SBA Home Loans Observations
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+SHL %>%
+  group_by(state)%>%
+  summarize(home_total_loans = sum(`Total Approved Loan Amount`),
+            home_realestate_loss = sum(`Verified Loss Real Estate`),
+            home_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(home_total_loans)) -> SHL_state
+
+SHL_state
+```
+
+Going by the numbers, New York and New Jersey received the most value in home loans while North Carolina and West virginia received the least in home loans. New York and New Jersey did have the highest home real estate losses so they did deserve the greater value than other states. Most likely this is because both states have greater populations, number of properties, and property values than the other states.
+
+### SBA Business Loans Observations
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+SBL %>%
+  group_by(state)%>%
+  summarize(business_total_loans = sum(`Total Approved Loan Amount`),
+            business_realestate_loss = sum(`Verified Loss Real Estate`),
+            business_total_loss = sum(`Total Verified Loss`))%>%
+  arrange(desc(business_total_loans)) -> SBL_state
+SBL_state
+```
+
+Again it is evident that New York and New Jersey received the most business loans as well, while this time Delaware and Pennsylvania took the least business loans. This is again, most likely the case because both states have greater populations, number of properties, and property values than the other states.
+
+### Most Sandy SBA Loans were Home Loans
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+ggplot(total_SL_state, mapping = aes(x=state, y=percent_home)) + 
+  geom_col() + 
+  theme_bw() +
+  ylab("Percent Home Loans")
+```
+
+In terms of percentages of home loans versus business loans, five out of, really, 8 states had over 50% of loans dedicated to home loans. It does seem as though most loans were for homes in terms of percentages, but it is difficult to say that confidently because, it could easily have been 50%. 
+
+Overall the hypothesis, that mainly the same states received home and business loans due to hurricane Sandy, held true. New York and New Jersey received the greatest amount of loans and value in loans, primarily due to their real estate values being higher than the other states. It is also interesting to note that 14 out of the 24 states, such as Florida, affected by Hurricane Sandy were not even included in the dataset. It could be due to the fact that they were less affected than these 10, people in those states chose not to take disaster loans, or the dataset is simply incomplete among other possible reasons.
+
