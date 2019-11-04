@@ -1,5 +1,5 @@
 ---
-title: "SBA Diasaster Loans Plot 1"
+title: "SBA Diasaster Loans Plot 2"
 author: "Marzuq Khan"
 date: "04 November 2019"
 header-includes:
