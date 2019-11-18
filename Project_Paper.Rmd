@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 \newpage
 
-#Introduction
+# Introduction
 
 The Small Business Association (SBA) is a government agency that provides support to small businesses primarily in the form of long-term, low interest government backed loans. Through the SBA Disaster Loan program, homeowners and renters are also eligible for these loans to rebuild after a disaster. The SBA has Disaster loan datasets from 2001 to 2018 which are divided into separate Home and Business loan datasets. This paper focuses on the datasets for the 2018 year as well as the Hurricane Sandy dataset. The measures for these datasets are quantitaive as they generally provide loan amounts and costs of damage.
 
@@ -128,9 +128,9 @@ full_join(SHL_county, SBL_county, by = c("state", "county"))%>%
   arrange(desc(total_loans)) -> total_SL_county
 ```
 
-#Initial Hypotheses 
+# Initial Hypotheses 
 
-##1) Some states almost never get damaged property from disasters. 
+## 1) Some states almost never get damaged property from disasters. 
   
 Natural disasters hit certain areas because of specific conditions nearby, such as the west coast having a fault line which means that earthquakes would be more common there, the southeast being prone to hurricanes due to weather conditions from the Atlantic Ocean, and the midwest having tornadoes because cold fronts and tropical air seem to collide there. It would be interesting to find out that a state or few could be natural disaster free.
   
@@ -141,7 +141,7 @@ levels(SBA_BL$state)
 
 It looks like 29 out of 50 states are included in the Home Loan dataset and 35 out of 50 in the Business dataset for the year 2018, but both datasets also have multiple NA values. Just looking at the 2018 datasets, it is difficult to say whether or not the hypothesis is correct, because it is possible it is incomplete but also other years may have data for the missing states. It would not be a good idea to conclude that some states have "never" had a natural disaster. Ferdinand Bada's article, "The 10 States Safest From Natural Disasters" seems to disprove the hypothesis of there being states that completeley avoid any natural disaster. Even Michigan, which is ranked as the safest state has earthquakes and tornadoes, which are simply less severe than other states. The datasets and this article prove that, in some years, or just on record, a number of states may have very minimal disaster, but it is unlikely that any state has been completely disaster free.
 
-##2) Barely any disasters just affect one home or business. 
+## 2) Barely any disasters just affect one home or business. 
 
 Usually disasters will have an impact on large areas, so multiple properties are likely to take damage and require loans to recover. The word barely is up for interpretation in this hypothesis so let us just give a value of 5% or less to mean that it is equal to the word barely.
 
@@ -159,7 +159,7 @@ nrow(OneBusiness)/nrow(SBA_BL)
 
 Based on these datasets, the hypothesis proves true that less than 1% of disasters affect only one home, and less than 3% of disasters affect only one business in 2018. Our dataset seems to follow the given value of 5% so, it should be acceptable. While these datasets may prove our hypothesis to be true, again we cannot be certain because there could be missing data and it does not account for every year. It would be good to consider the fact that only one person decided to apply and received a loan from a disaster that, most likely, more people could also have benefited from.
 
-##3) Mainly the same states will receive Business and Home Loans related to Hurricane Sandy
+## 3) Mainly the same states will receive Business and Home Loans related to Hurricane Sandy
 
 Hurricane Sandy struck in 2012, and cost about $65 billion in damages. It affected a total of 24 states, but only 10 benefitted from SBA disaster loans. Something interesting to look at may be how much in cost of loans, number of loans, and percentage of loans were taken by each state.
 
@@ -235,7 +235,7 @@ In terms of percentages of home loans versus business loans, five out of, really
 
 Overall the hypothesis, that mainly the same states received home and business loans due to hurricane Sandy, held true. New York and New Jersey received the greatest amount of loans and value in loans, primarily due to their real estate values being higher than the other states. It is also interesting to note that 14 out of the 24 states, such as Florida, affected by Hurricane Sandy were not even included in the dataset. It could be due to the fact that they were less affected than these 10, people in those states chose not to take disaster loans, or the dataset is simply incomplete among other possible reasons.
 
-##4) The total approved loan amount is usually less than the total verified loss
+## 4) The total approved loan amount is usually less than the total verified loss
 
 It would be a safe assumption to believe that loans are not meant to entirely cover all damages as sometimes people will have their own safety nets in cases of disasters to handle problems on their own. Most people, however, do not account for unknown problems so, disaster loans are necessary in these cases. Considering both of these assumptions, the hypothesis that generally the amount of loan given out is less than the amount of actual damage taken, would be reasonable.
 
@@ -287,21 +287,21 @@ SL %>%
 
 The test for Hurricane Sandy proved to be the same as for home loans and business loans. Loan amounts are less than verified loss by about $1.1 million with the rare cases having greater loan amounts than the verified loss.
 
-#Exploratory Data Analysis
+# Exploratory Data Analysis
 
 Summary statistics for the 2018 home and business loans datasets reveal that North Carolina received the most disaster loans out of any state, most likely due to the damages caused by Hurricane Florence. Across the board of all three datasets, all loss amounts and loan amounts are right-skewed because the median is always less than the average. The rest of the analysis was done testing the hypotheses. (Reference Figure 6 in the Appendix for more details)
 
-#Data-driven Hypotheses
+# Data-driven Hypotheses
 
-An interesting find is that the population of New York and New Jersey totals around 29 million people while the total of the eight other states in the Hurricane Sandy datasets is around 44 million according to Wikipedia's numbers on population by states. New York has the highst population among the states in that dataset, as expected, but, New Jersey actually has a lower population than North Carolina and barely beats out Virginia's population. That means that damages were mainly assessed by the cost of real estate damage rather than people affected and that people from New York and New Jersey took loans more often than other states. Another intersting fact is that it is possible for loan amounts to exceed loan amounts. According to the SBA this could be due to additional factors such as difficulties paying off mortgages or being forced to relocate but, each case is likely to be different and have completely unknown circumstances.
+An interesting find is that the population of New York and New Jersey totals around 29 million people while the total of the eight other states in the Hurricane Sandy datasets is around 44 million according to Wikipedia's numbers on population by states. New York has the highst population among the states in that dataset, as expected, but, New Jersey actually has a lower population than North Carolina and barely beats out Virginia's population. That means that damages were mainly assessed by the cost of real estate damage rather than people affected and that people from New York and New Jersey took loans more often than other states. Another intersting fact is that it is possible for total approved loan amounts to exceed verified loss loan amounts. According to the SBA this could be due to additional factors such as difficulties paying off mortgages or being forced to relocate but, each case is likely to be different and have completely unknown circumstances.
 
-#Discussion
+# Discussion
 
 In regard to Hiramatsu and Marshall's article, the evidence collected here does not prove or disprove their claim of disaster loans helping businesses. It simply adds more information on locations of disasters, where loans seem to be taken, and how much loans counter damage costs. At the very least, more people should seek to utilize these loans in more locations to recover from disasters according to both the analysis done here, and Hiramatsu and Marshall's article.
 
 \newpage
 
-#References
+# References
 
 Bada, Ferdinand. "The 10 States Safest From Natural Disasters" WorldAtlas, 6 July 2018, www.worldatlas.com/articles/the-10-states-safest-from-natural-disasters.html.
 
@@ -309,9 +309,9 @@ Hiramatsu, T, and Marshall, Mi. "The Long-Term Impact of Disaster Loans: The Cas
 
 \newpage
 
-#Appendix
+# Appendix
 
-###(Figure 1) Total Dollar Amount of SBA Loans by County
+### (Figure 1) Total Dollar Amount of SBA Loans by County
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE}
 ggplot(total_SL_county, mapping = aes(x=county, y=total_loans, fill=state), na.rm=TRUE) + 
@@ -322,7 +322,7 @@ ggplot(total_SL_county, mapping = aes(x=county, y=total_loans, fill=state), na.r
   xlab("County")
 ```
 
-###(Figure 2) Total Dollar Amount of SBA Loans by County
+### (Figure 2) Total Dollar Amount of SBA Loans by County
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE}
 plot_usmap(data = total_SL_county, 
@@ -338,28 +338,28 @@ plot_usmap(data = total_SL_county,
   theme(legend.position = "right") 
 ```
 
-###(Figure 3) Home Loan
+### (Figure 3) Home Loan
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE}
 SBA_HL %>%
   ggplot(aes(x=state, y=ala_VS_tvl)) + geom_col()
 ```
 
-###(Figure 4) Business Loan
+### (Figure 4) Business Loan
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE}
 SBA_BL %>%
   ggplot(aes(x=state, y=ala_VS_tvl)) + geom_col()
 ```
 
-###(Figure 5) Hurricane Sandy Combined Loans
+### (Figure 5) Hurricane Sandy Combined Loans
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE}
 SL %>%
   ggplot(aes(x=state, y=ala_VS_tvl)) + geom_col()
 ```
 
-###(Figure 6) Summary Statistics
+### (Figure 6) Summary Statistics
 
 ```{r, message=FALSE, error=FALSE, warning=FALSE}
 summary(SBA_HL)
